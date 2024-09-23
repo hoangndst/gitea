@@ -227,6 +227,33 @@ func ToActionTask(ctx context.Context, t *actions_model.ActionTask) (*api.Action
 	}, nil
 }
 
+// ToActionRun convert a actions_model.ActionRun to an api.ActionRun
+func ToActionRun(ctx context.Context, r *actions_model.ActionRun) (*api.ActionRun, error) {
+	if err := r.LoadAttributes(ctx); err != nil {
+		return nil, err
+	}
+	url := strings.TrimSuffix(setting.AppURL, "/") + r.Link()
+
+	return &api.ActionRun{
+		ID:            r.ID,
+		Title:         r.Title,
+		URL:           url,
+		RepoID:        r.RepoID,
+		OwnerID:       r.OwnerID,
+		WorkflowID:    r.WorkflowID,
+		TriggerUserID: r.TriggerUserID,
+		Ref:           r.Ref,
+		CommitSHA:     r.CommitSHA,
+		Status:        r.Status.String(),
+		Event:         r.Event.Event(),
+		Version:       int64(r.Version),
+		StartAt:       r.Started.AsLocalTime(),
+		StopAt:        r.Stopped.AsLocalTime(),
+		CreatedAt:     r.Created.AsLocalTime(),
+		UpdatedAt:     r.Updated.AsLocalTime(),
+	}, nil
+}
+
 // ToVerification convert a git.Commit.Signature to an api.PayloadCommitVerification
 func ToVerification(ctx context.Context, c *git.Commit) *api.PayloadCommitVerification {
 	verif := asymkey_model.ParseCommitWithSignature(ctx, c)

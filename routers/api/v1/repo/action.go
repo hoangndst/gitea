@@ -581,3 +581,68 @@ func ListActionTasks(ctx *context.APIContext) {
 
 	ctx.JSON(http.StatusOK, &res)
 }
+
+// ListActionRuns list all the action runs of a repository
+func ListActionRuns(ctx *context.APIContext) {
+	// swagger:operation GET /repos/{owner}/{repo}/actions/runs repository ListActionRuns
+	// ---
+	// summary: List a repository's action runs
+	// produces:
+	// - application/json
+	// parameters:
+	// - name: owner
+	//   in: path
+	//   description: owner of the repo
+	//   type: string
+	//   required: true
+	// - name: repo
+	//   in: path
+	//   description: name of the repo
+	//   type: string
+	//   required: true
+	// - name: page
+	//   in: query
+	//   description: page number of results to return (1-based)
+	//   type: integer
+	// - name: limit
+	//   in: query
+	//   description: page size of results, default maximum page size is 50
+	//   type: integer
+	// responses:
+	//   "200":
+	//     "$ref": "#/responses/RunsList"
+	//   "400":
+	//     "$ref": "#/responses/error"
+	//   "403":
+	//     "$ref": "#/responses/forbidden"
+	//   "404":
+	//     "$ref": "#/responses/notFound"
+	//   "409":
+	//     "$ref": "#/responses/conflict"
+	//   "422":
+	//     "$ref": "#/responses/validationError"
+
+	runs, total, err := db.FindAndCount[actions_model.ActionRun](ctx, &actions_model.FindRunOptions{
+		ListOptions: utils.GetListOptions(ctx),
+		RepoID:      ctx.Repo.Repository.ID,
+	})
+	if err != nil {
+		ctx.Error(http.StatusInternalServerError, "ListActionRuns", err)
+		return
+	}
+
+	res := new(api.ActionRunResponse)
+	res.TotalCount = total
+
+	res.Entries = make([]*api.ActionRun, len(runs))
+	for i := range runs {
+		convertedRun, err := convert.ToActionRun(ctx, runs[i])
+		if err != nil {
+			ctx.Error(http.StatusInternalServerError, "ToActionRun", err)
+			return
+		}
+		res.Entries[i] = convertedRun
+	}
+
+	ctx.JSON(http.StatusOK, &res)
+}
