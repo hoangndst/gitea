@@ -247,10 +247,51 @@ func ToActionRun(ctx context.Context, r *actions_model.ActionRun) (*api.ActionRu
 		Status:        r.Status.String(),
 		Event:         r.Event.Event(),
 		Version:       int64(r.Version),
-		StartAt:       r.Started.AsLocalTime(),
-		StopAt:        r.Stopped.AsLocalTime(),
+		StartedAt:     r.Started.AsLocalTime(),
+		StoppedAt:     r.Stopped.AsLocalTime(),
 		CreatedAt:     r.Created.AsLocalTime(),
 		UpdatedAt:     r.Updated.AsLocalTime(),
+	}, nil
+}
+
+// ToActionRunJob convert a actions_model.ActionRunJob to an api.ActionRunJob
+func ToActionRunJob(ctx context.Context, j *actions_model.ActionRunJob) (*api.ActionRunJob, error) {
+	if err := j.LoadAttributes(ctx); err != nil {
+		return nil, err
+	}
+
+	return &api.ActionRunJob{
+		ID:                j.ID,
+		RunID:             j.RunID,
+		RepoID:            j.RepoID,
+		OwnerID:           j.OwnerID,
+		CommitSHA:         j.CommitSHA,
+		IsForkPullRequest: j.IsForkPullRequest,
+		Name:              j.Name,
+		Attempt:           j.Attempt,
+		WorkflowPayload:   j.WorkflowPayload,
+		JobID:             j.JobID,
+		Needs:             j.Needs,
+		RunsOn:            j.RunsOn,
+		TaskID:            j.TaskID,
+		Status:            j.Status.String(),
+		StartedAt:         j.Started.AsLocalTime(),
+		StoppedAt:         j.Stopped.AsLocalTime(),
+		CreatedAt:         j.Created.AsLocalTime(),
+		UpdatedAt:         j.Updated.AsLocalTime(),
+	}, nil
+}
+
+// ToActionTaskStep convert a actions_model.ActionTaskStep to an api.ActionTaskStep
+func ToActionTaskStep(ctx context.Context, s *actions_model.ActionTaskStep) (*api.ActionTaskStep, error) {
+	return &api.ActionTaskStep{
+		ID:        s.ID,
+		Name:      s.Name,
+		Status:    s.Status.String(),
+		StartedAt: s.Started.AsLocalTime(),
+		StoppedAt: s.Stopped.AsLocalTime(),
+		CreatedAt: s.Created.AsLocalTime(),
+		UpdatedAt: s.Updated.AsLocalTime(),
 	}, nil
 }
 

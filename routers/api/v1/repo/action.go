@@ -646,3 +646,86 @@ func ListActionRuns(ctx *context.APIContext) {
 
 	ctx.JSON(http.StatusOK, &res)
 }
+
+// ListActionRunJobs list all the action run jobs of a repository
+func ListActionRunJobs(ctx *context.APIContext) {
+	// swagger:operation GET /repos/{owner}/{repo}/actions/runs/{run_id}/jobs repository ListActionRunJobs
+	// ---
+	// summary: List a repository's action run jobs
+	// produces:
+	// - application/json
+	// parameters:
+	// - name: owner
+	//   in: path
+	//   description: owner of the repo
+	//   type: string
+	//   required: true
+	// - name: repo
+	//   in: path
+	//   description: name of the repo
+	//   type: string
+	//   required: true
+	// - name: run_id
+	//   in: path
+	//   description: id of the run
+	//   type: integer
+	//   required: true
+	// - name: page
+	//   in: query
+	//   description: page number of results to return (1-based)
+	//   type: integer
+	// - name: limit
+	//   in: query
+	//   description: page size of results, default maximum page size is 50
+	//   type: integer
+	// responses:
+	//   "200":
+	//     "$ref": "#/responses/JobsList"
+	//   "400":
+	//     "$ref": "#/responses/error"
+	//   "403":
+	//     "$ref": "#/responses/forbidden"
+	//   "404":
+	//     "$ref": "#/responses/notFound"
+	//   "409":
+	//     "$ref": "#/responses/conflict"
+	//   "422":
+	//     "$ref": "#/responses/validationError"
+
+	runJobs, total, err := db.FindAndCount[actions_model.ActionRunJob](ctx, &actions_model.FindRunJobOptions{
+		ListOptions: utils.GetListOptions(ctx),
+		RunID:       ctx.PathParamInt64("run_id"),
+	})
+	if err != nil {
+		ctx.Error(http.StatusInternalServerError, "ListActionRunJobs", err)
+		return
+	}
+
+	res := new(api.ActionRunJobResponse)
+	res.TotalCount = total
+	res.Entries = make([]*api.ActionRunJob, len(runJobs))
+	for i := range runJobs {
+		convertedRunJob, err := convert.ToActionRunJob(ctx, runJobs[i])
+		if err != nil {
+			ctx.Error(http.StatusInternalServerError, "ToActionRunJob", err)
+			return
+		}
+		taskSteps, err := actions_model.GetTaskStepsByTaskID(ctx, runJobs[i].TaskID)
+		if err != nil {
+			ctx.Error(http.StatusInternalServerError, "GetTaskStepsByTaskID", err)
+			return
+		}
+		convertedRunJob.Steps = make([]*api.ActionTaskStep, len(taskSteps))
+		for j := range taskSteps {
+			convertedTaskStep, err := convert.ToActionTaskStep(ctx, taskSteps[j])
+			if err != nil {
+				ctx.Error(http.StatusInternalServerError, "ToActionTaskStep", err)
+				return
+			}
+			convertedRunJob.Steps[j] = convertedTaskStep
+		}
+		res.Entries[i] = convertedRunJob
+	}
+
+	ctx.JSON(http.StatusOK, &res)
+}

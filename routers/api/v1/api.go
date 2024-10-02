@@ -1180,6 +1180,7 @@ func Routes() *web.Router {
 				m.Group("/actions", func() {
 					m.Get("/tasks", repo.ListActionTasks)
 					m.Get("/runs", repo.ListActionRuns)
+					m.Get("/runs/{run_id}/jobs", repo.ListActionRunJobs)
 				}, reqRepoReader(unit.TypeActions), context.ReferencesGitRepo(true))
 				m.Group("/keys", func() {
 					m.Combo("").Get(repo.ListDeployKeys).

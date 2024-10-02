@@ -47,9 +47,9 @@ type ActionRun struct {
 	Event         string `json:"event"`
 	Version       int64  `json:"version"`
 	// swagger:strfmt date-time
-	StartAt time.Time `json:"start_at"`
+	StartedAt time.Time `json:"started_at"`
 	// swagger:strfmt date-time
-	StopAt time.Time `json:"stop_at"`
+	StoppedAt time.Time `json:"stopped_at"`
 	// swagger:strfmt date-time
 	CreatedAt time.Time `json:"created_at"`
 	// swagger:strfmt date-time
@@ -59,4 +59,54 @@ type ActionRun struct {
 type ActionRunResponse struct {
 	Entries    []*ActionRun `json:"actions_runs"`
 	TotalCount int64        `json:"total_count"`
+}
+
+type ActionTaskStep struct {
+	ID     int64  `json:"id"`
+	Name   string `json:"name"`
+	Status string `json:"status"`
+	// swagger:strfmt date-time
+	StartedAt time.Time `json:"started_at"`
+	// swagger:strfmt date-time
+	StoppedAt time.Time `json:"stopped_at"`
+	// swagger:strfmt date-time
+	CreatedAt time.Time `json:"created_at"`
+	// swagger:strfmt date-time
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type ActionTaskStepResponse struct {
+	Entries    []*ActionTaskStep `json:"actions_tasks_steps"`
+	TotalCount int64             `json:"total_count"`
+}
+
+type ActionRunJob struct {
+	ID                int64             `json:"id"`
+	RunID             int64             `json:"run_id"`
+	RepoID            int64             `json:"repo_id"`
+	OwnerID           int64             `json:"owner_id"`
+	CommitSHA         string            `json:"commit_sha"`
+	IsForkPullRequest bool              `json:"is_fork_pull_request"`
+	Name              string            `json:"name"`
+	Attempt           int64             `json:"attempt"`
+	WorkflowPayload   []byte            `json:"workflow_payload"`
+	JobID             string            `json:"job_id"`
+	Needs             []string          `json:"needs"`
+	RunsOn            []string          `json:"runs_on"`
+	TaskID            int64             `json:"task_id"`
+	Steps             []*ActionTaskStep `json:"steps"`
+	Status            string            `json:"status"`
+	// swagger:strfmt date-time
+	StartedAt time.Time `json:"started_at"`
+	// swagger:strfmt date-time
+	StoppedAt time.Time `json:"stopped_at"`
+	// swagger:strfmt date-time
+	CreatedAt time.Time `json:"created_at"`
+	// swagger:strfmt date-time
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type ActionRunJobResponse struct {
+	Entries    []*ActionRunJob `json:"actions_run_jobs"`
+	TotalCount int64           `json:"total_count"`
 }
